@@ -1,3 +1,7 @@
+<script>
+    let hasImage = $state(false);
+</script>
+
 <div id="title">CNN Flower Classification</div>
 
 <div id="wrapper">
@@ -16,18 +20,38 @@
     <div id="panel-right">
         <div class="title">Result</div>
         <div id="output-area">
-            <div id="output-image" style:background-image="url(img/sunflower.jpg)"></div>
-            <div id="class-predictions">
-                <div class="title">Predicted class: <span id="predicted-class">Sunflower</span></div>
-                <div class="subtitle">Class Probabilities:</div>
-                <ul>
-                    <li>Sunflower: <span id="prob-sunflower">90%</span></li>
-                    <li>Daisy: <span id="prob-daisy">3%</span></li>
-                    <li>Dandelion: <span id="prob-dandelion">2.5%</span></li>
-                    <li>Rose: <span id="prob-rose">2.5%</span></li>
-                    <li>Tulip: <span id="prob-tulip">2%</span></li>
-                </ul>
-            </div>
+            {#if hasImage}
+                <div id="output-image" style:background-image="url(img/sunflower.jpg)"></div>
+            {:else}
+                <div id="output-image" class="placeholder">
+                    <span>?</span>
+                </div>
+            {/if}
+            {#if hasImage}
+                <div id="class-predictions">
+                    <div class="title">Predicted class: <span id="predicted-class">Sunflower</span></div>
+                    <div class="subtitle">Class Probabilities:</div>
+                    <ul>
+                        <li>Sunflower: <span id="prob-sunflower">90%</span></li>
+                        <li>Daisy: <span id="prob-daisy">3%</span></li>
+                        <li>Dandelion: <span id="prob-dandelion">2.5%</span></li>
+                        <li>Rose: <span id="prob-rose">2.5%</span></li>
+                        <li>Tulip: <span id="prob-tulip">2%</span></li>
+                    </ul>
+                </div>
+            {:else}
+                <div id="class-predictions">
+                    <div class="title">Predicted class: ?</div>
+                    <div class="subtitle">Class Probabilities:</div>
+                    <ul>
+                        <li>Sunflower: <span id="prob-sunflower">?%</span></li>
+                        <li>Daisy: <span id="prob-daisy">?%</span></li>
+                        <li>Dandelion: <span id="prob-dandelion">?%</span></li>
+                        <li>Rose: <span id="prob-rose">?%</span></li>
+                        <li>Tulip: <span id="prob-tulip">?%</span></li>
+                    </ul>
+                </div>
+            {/if}
         </div>
 
         <div id="class-list">
@@ -207,6 +231,24 @@
         border: 5px solid #4593e1;
         border-radius: 9px;
         /* margin: 16px; */
+    }
+
+    #output-image.placeholder {
+        width: 300px;
+        height: 300px;
+        background: lightgrey;
+        border: 5px solid #4593e1;
+        border-radius: 9px;
+        margin: 0 auto;
+        display: flex;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 128px;
+    }
+
+    #output-image.placeholder > span {
     }
 
     #prob-sunflower,
