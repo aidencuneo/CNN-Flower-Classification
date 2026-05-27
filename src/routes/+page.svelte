@@ -32,6 +32,7 @@
         let reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = e => outputImage.src = e.target.result;
+        prediction = [0, 0, 0, 0, 0];
 
         let res = await fetch(`${BACKEND_URL}/predict`, {
             method: 'POST',
