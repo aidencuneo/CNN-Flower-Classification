@@ -1,5 +1,6 @@
 <script>
     const LABELS = ['Daisy', 'Dandelion', 'Rose', 'Sunflower', 'Tulip'];
+    const BACKEND_URL = 'http://aidenbc.com.au:25567'; // http://localhost:5000
 
     let outputImage = $state(null);
     let fileInput = $state(null);
@@ -27,17 +28,17 @@
         let formData = new FormData();
         formData.append('file', file);
 
+        hasImage = true;
         let reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = e => outputImage.src = e.target.result;
 
-        let res = await fetch('http://localhost:5000/predict', {
+        let res = await fetch(`${BACKEND_URL}/predict`, {
             method: 'POST',
             body: formData,
         });
 
         prediction = await res.json();
-        hasImage = true;
     }
 
     function getPercent(label) {
