@@ -1,6 +1,6 @@
 <script>
     const LABELS = ['Daisy', 'Dandelion', 'Rose', 'Sunflower', 'Tulip'];
-    const BACKEND_URL = 'http://aidenbc.com.au:25567'; // http://localhost:5000
+    const BACKEND_URL = 'https://aidenbc.com.au:25567'; // http://localhost:5000
 
     let outputImage = $state(null);
     let fileInput = $state(null);
