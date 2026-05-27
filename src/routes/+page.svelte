@@ -27,6 +27,10 @@
         let formData = new FormData();
         formData.append('file', file);
 
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = e => outputImage.src = e.target.result;
+
         let res = await fetch('http://localhost:5000/predict', {
             method: 'POST',
             body: formData,
@@ -34,10 +38,6 @@
 
         prediction = await res.json();
         hasImage = true;
-
-        let reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = e => outputImage.src = e.target.result;
     }
 
     function getPercent(label) {
