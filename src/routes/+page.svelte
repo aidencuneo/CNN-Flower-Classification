@@ -1,19 +1,93 @@
 <script>
+    const LABELS = ['Daisy', 'Dandelion', 'Rose', 'Sunflower', 'Tulip'];
+
+    let outputImage = $state(null);
+    let fileInput = $state(null);
+    let draggingText = $state('Drag file here');
     let hasImage = $state(false);
+    let files = $state([]);
+    let predictedClass = $derived(hasImage ? LABELS[prediction.indexOf(Math.max(...prediction))] : '?');
+    let prediction = $state([0, 0, 0, 0, 0]);
+
+    function clickFileInput() {
+        fileInput.click();
+    }
+
+    function clear() {
+        hasImage = false;
+        draggingText = 'Drag file here';
+        fileInput.reset();
+    }
+
+    async function uploadFile() {
+        if (files.length == 0)
+            return;
+
+        let file = files[0];
+        let formData = new FormData();
+        formData.append('file', file);
+
+        let res = await fetch('http://localhost:5000/predict', {
+            method: 'POST',
+            body: formData,
+        });
+
+        prediction = await res.json();
+        hasImage = true;
+
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = e => outputImage.src = e.target.result;
+    }
+
+    function getPercent(label) {
+        let index = {
+            daisy: 0,
+            dandelion: 1,
+            rose: 2,
+            sunflower: 3,
+            tulip: 4,
+        }[label];
+
+        return `${Math.round(100 * prediction[index] * 100) / 100}%`;
+    }
+
+    $effect(() => {
+        if (files.length > 0)
+            draggingText = `File: ${files[0].name}`;
+    });
 </script>
 
 <div id="title">CNN Flower Classification</div>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_missing_attribute -->
+
 <div id="wrapper">
     <div id="panel-left">
         <div class="title">Upload flower image</div>
-        <div id="file-upload">
-            <span>Drag file here</span>
+        <div id="file-upload" role="button" tabindex="0"
+            onclick={clickFileInput}
+            ondragover={e => {
+                e.preventDefault();
+                draggingText = 'Drop file to upload...';
+            }}
+            ondrop={e => {
+                e.preventDefault();
+                files = e.dataTransfer.files;
+            }}
+            ondragend={e => {
+                draggingText = 'Drag file here';
+            }}
+        >
+            <input bind:this={fileInput} bind:files accept="image/png, image/jpeg" type="file" style="display: none">
+            <span>{draggingText}</span>
         </div>
-        <button id="predict-btn">Predict</button>
+        <button id="predict-btn" onclick={uploadFile}>Predict</button>
         <div class="row" style:gap="8px">
             <div id="time-taken" class="stat" style:flex="1">Time Taken: 0ms</div>
-            <button id="clear-image-btn">Clear</button>
+            <button id="clear-image-btn" onclick={clear}>Clear</button>
         </div>
     </div>
 
@@ -21,7 +95,8 @@
         <div class="title">Result</div>
         <div id="output-area">
             {#if hasImage}
-                <div id="output-image" style:background-image="url(img/sunflower.jpg)"></div>
+                <img bind:this={outputImage} id="output-image">
+                <!-- <div bind:this={outputImage} id="output-image" style:background-image="url(img/sunflower.jpg)"></div> -->
             {:else}
                 <div id="output-image" class="placeholder">
                     <span>?</span>
@@ -29,14 +104,14 @@
             {/if}
             {#if hasImage}
                 <div id="class-predictions">
-                    <div class="title">Predicted class: <span id="predicted-class">Sunflower</span></div>
+                    <div class="title">Predicted class: <span id="predicted-class">{predictedClass}</span></div>
                     <div class="subtitle">Class Probabilities:</div>
                     <ul>
-                        <li>Sunflower: <span id="prob-sunflower">90%</span></li>
-                        <li>Daisy: <span id="prob-daisy">3%</span></li>
-                        <li>Dandelion: <span id="prob-dandelion">2.5%</span></li>
-                        <li>Rose: <span id="prob-rose">2.5%</span></li>
-                        <li>Tulip: <span id="prob-tulip">2%</span></li>
+                        <li>Daisy: <span id="prob-daisy">{getPercent('daisy')}</span></li>
+                        <li>Dandelion: <span id="prob-dandelion">{getPercent('dandelion')}</span></li>
+                        <li>Rose: <span id="prob-rose">{getPercent('rose')}</span></li>
+                        <li>Sunflower: <span id="prob-sunflower">{getPercent('sunflower')}</span></li>
+                        <li>Tulip: <span id="prob-tulip">{getPercent('tulip')}</span></li>
                     </ul>
                 </div>
             {:else}
@@ -44,10 +119,10 @@
                     <div class="title">Predicted class: ?</div>
                     <div class="subtitle">Class Probabilities:</div>
                     <ul>
-                        <li>Sunflower: <span id="prob-sunflower">?%</span></li>
                         <li>Daisy: <span id="prob-daisy">?%</span></li>
                         <li>Dandelion: <span id="prob-dandelion">?%</span></li>
                         <li>Rose: <span id="prob-rose">?%</span></li>
+                        <li>Sunflower: <span id="prob-sunflower">?%</span></li>
                         <li>Tulip: <span id="prob-tulip">?%</span></li>
                     </ul>
                 </div>
@@ -62,10 +137,6 @@
 
             <div id="class-images">
                 <div>
-                    <div class="class-image" style:background-image="url(img/sunflower.jpg)"></div>
-                    <div class="class-name">Sunflower</div>
-                </div>
-                <div>
                     <div class="class-image" style:background-image="url(img/daisy.jpg)"></div>
                     <div class="class-name">Daisy</div>
                 </div>
@@ -76,6 +147,10 @@
                 <div>
                     <div class="class-image" style:background-image="url(img/rose.jpg)"></div>
                     <div class="class-name">Rose</div>
+                </div>
+                <div>
+                    <div class="class-image" style:background-image="url(img/sunflower.jpg)"></div>
+                    <div class="class-name">Sunflower</div>
                 </div>
                 <div>
                     <div class="class-image" style:background-image="url(img/tulip.jpg)"></div>
